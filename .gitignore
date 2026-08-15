@@ -1,0 +1,30 @@
+# Backend
+backend/target/
+*.class
+
+# Frontend
+frontend/node_modules/
+frontend/dist/
+frontend/*.tsbuildinfo
+
+# Env / secrets
+.env
+.env.*
+*.pem
+*.key
+
+# Logs
+*.log
+npm-debug.log*
+
+# IDE
+.idea/
+*.iml
+.vscode/
+
+# Claude Code / tooling
+.claude/
+repomix-output.xml
+
+# OS
+.DS_Store

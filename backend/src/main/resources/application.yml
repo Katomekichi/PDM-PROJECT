@@ -1,0 +1,56 @@
+spring:
+  application:
+    name: pdm-service
+
+  datasource:
+    url: jdbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5432}/${DB_NAME:pdm}
+    username: ${DB_USER:pdm_user}
+    password: ${DB_PASSWORD:pdm_password}
+
+  jpa:
+    # NEVER use 'update' or 'create' in real environments - Flyway owns the schema.
+    # Hibernate is only allowed to validate that entities match what Flyway created.
+    hibernate:
+      ddl-auto: validate
+    open-in-view: false
+    properties:
+      hibernate:
+        format_sql: true
+
+  flyway:
+    enabled: true
+    locations: classpath:db/migration
+
+  data:
+    redis:
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
+
+  kafka:
+    bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:localhost:9092}
+
+server:
+  port: 8080
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+  endpoint:
+    health:
+      probes:
+        enabled: true   # exposes /actuator/health/liveness and /readiness for k8s probes
+
+logging:
+  level:
+    com.pdm: DEBUG
+    org.hibernate.SQL: DEBUG
+
+# JWT configuration (Milestone 2)
+# Override pdm.jwt.secret via environment variable PDM_JWT_SECRET in real deployments.
+# Never commit an actual production secret here.
+pdm:
+  jwt:
+    secret: ${PDM_JWT_SECRET:pdm-dev-secret-change-me-must-be-at-least-32-chars-long}
+    expiration-ms: 28800000  # 8 hours

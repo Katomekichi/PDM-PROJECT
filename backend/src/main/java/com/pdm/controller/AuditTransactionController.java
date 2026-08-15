@@ -1,0 +1,27 @@
+package com.pdm.controller;
+
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+import java.util.*;
+import com.pdm.dto.response.AuditTransactionResponse;
+import com.pdm.service.AuditTransactionService;
+import lombok.RequiredArgsConstructor;
+
+
+@RestController
+@RequestMapping("/api/v1/practitioners/{practitionerId}")
+@RequiredArgsConstructor
+public class AuditTransactionController {
+
+    private final AuditTransactionService auditTransactionService;
+
+    @GetMapping("/transactions")
+    public List<AuditTransactionResponse> getTransactions(
+            @PathVariable UUID practitionerId) {
+
+        return auditTransactionService.getTransactions(practitionerId);
+    }
+}

@@ -1,0 +1,71 @@
+name: CI
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
+
+jobs:
+  backend:
+    name: Backend Build & Test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+          cache: maven
+
+      - name: Run backend tests (H2, no external DB needed)
+        working-directory: ./backend
+        run: mvn -B clean verify
+
+      - name: Build backend jar
+        working-directory: ./backend
+        run: mvn -B package -DskipTests
+
+  frontend:
+    name: Frontend Build & Test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Node 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: frontend/package.json
+
+      - name: Install dependencies
+        working-directory: ./frontend
+        run: npm install
+
+      - name: Type-check
+        working-directory: ./frontend
+        run: npx tsc -b
+
+      - name: Run tests
+        working-directory: ./frontend
+        run: npm run test
+
+      - name: Build
+        working-directory: ./frontend
+        run: npm run build
+
+  docker-build:
+    name: Docker Image Build (no push yet - Milestone 1 scope)
+    needs: [backend, frontend]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build backend image
+        run: docker build -t pdm-backend:ci ./backend
+      - name: Build frontend image
+        run: docker build -t pdm-frontend:ci ./frontend
+    # Milestone 2+ note: this job will grow a "push to registry" + "deploy to k8s" step
+    # once we have a real container registry and cluster target - deliberately deferred.
