@@ -7,9 +7,6 @@ import {
   Button,
   TextField,
   MenuItem,
-  List,
-  ListItem,
-  ListItemText,
   Chip,
   Table,
   TableHead,
@@ -87,51 +84,91 @@ const PreviousNewTable = ({
   fields: { key: string; label: string }[];
   previous: Record<string, any> | null;
   next: Record<string, any> | null;
-}) => (
-  <Table size="small">
-    <TableHead>
-      <TableRow>
-        <TableCell><strong>Field</strong></TableCell>
-        <TableCell><strong>Previous</strong></TableCell>
-        <TableCell><strong>New</strong></TableCell>
-      </TableRow>
-    </TableHead>
-    <TableBody>
-      {fields.map(({ key, label }) => {
-        const prevValue = previous ? previous[key] : undefined;
-        const newValue = next ? next[key] : undefined;
-        const changed = previous && next && prevValue !== newValue;
-        return (
-          <TableRow key={key}>
-            <TableCell>{label}</TableCell>
-            <TableCell sx={{ color: changed ? 'error.main' : undefined }}>
-              {formatValue(prevValue)}
-            </TableCell>
-            <TableCell sx={{ color: changed ? 'success.main' : undefined, fontWeight: changed ? 600 : undefined }}>
-              {formatValue(newValue)}
-            </TableCell>
-          </TableRow>
-        );
-      })}
-    </TableBody>
-  </Table>
-);
+}) => {
+  const showPrevious = !!previous;
+  const showNew = !!next;
+  const singleColumn = showPrevious !== showNew;
+
+  return (
+    <Table size="small" sx={{ tableLayout: 'fixed', width: '100%' }}>
+      <TableHead>
+        <TableRow>
+          <TableCell width="30%"><strong>Field</strong></TableCell>
+          {singleColumn ? (
+            <TableCell width="70%"><strong>Value</strong></TableCell>
+          ) : (
+            <>
+              <TableCell width="35%"><strong>Previous</strong></TableCell>
+              <TableCell width="35%"><strong>New</strong></TableCell>
+            </>
+          )}
+        </TableRow>
+      </TableHead>
+      <TableBody>
+        {fields.map(({ key, label }) => {
+          const prevValue = previous ? previous[key] : undefined;
+          const newValue = next ? next[key] : undefined;
+          const changed = showPrevious && showNew && prevValue !== newValue;
+          return (
+            <TableRow key={key}>
+              <TableCell><strong>{label}</strong></TableCell>
+              {singleColumn ? (
+                <TableCell>{formatValue(showPrevious ? prevValue : newValue)}</TableCell>
+              ) : (
+                <>
+                  <TableCell sx={{ color: changed ? 'error.main' : undefined }}>
+                    {formatValue(prevValue)}
+                  </TableCell>
+                  <TableCell sx={{ color: changed ? 'success.main' : undefined, fontWeight: changed ? 600 : undefined }}>
+                    {formatValue(newValue)}
+                  </TableCell>
+                </>
+              )}
+            </TableRow>
+          );
+        })}
+      </TableBody>
+    </Table>
+  );
+};
 
 const renderTransaction = (transaction: {
   entityType?: string;
   operation?: string;
+  changedBy?: string;
+  changedAt?: string;
   parsedOldData: any;
   parsedNewData: any;
 }) => {
   const fields = transaction.entityType ? ENTITY_FIELDS[transaction.entityType] : undefined;
 
-  if (!fields) {
-    return <pre>{JSON.stringify(transaction.parsedNewData, null, 2)}</pre>;
-  }
+  const body = !fields ? (
+    <pre>{JSON.stringify(transaction.parsedNewData, null, 2)}</pre>
+  ) : (
+    <PreviousNewTable
+      fields={fields}
+      previous={transaction.parsedOldData}
+      next={transaction.parsedNewData}
+    />
+  );
 
   return (
-    <Stack display="flex" flexDirection="column" gap="0.75rem" width="100%">
-      <Box>
+    <Paper
+      variant="outlined"
+      sx={{
+        width: '100%',
+        borderRadius: 2,
+        overflow: 'hidden',
+      }}
+    >
+      <Box
+        display="flex"
+        alignItems="center"
+        justifyContent="space-between"
+        px={2}
+        py={1.25}
+        sx={{ bgcolor: 'action.hover', borderBottom: '1px solid', borderColor: 'divider' }}
+      >
         <Chip
           size="small"
           label={transaction.operation}
@@ -143,13 +180,16 @@ const renderTransaction = (transaction: {
               : 'warning'
           }
         />
+        {(transaction.changedBy || transaction.changedAt) && (
+          <Typography variant="caption" color="text.secondary">
+            {transaction.changedBy && <>By {transaction.changedBy}</>}
+            {transaction.changedBy && transaction.changedAt && ' · '}
+            {transaction.changedAt && new Date(transaction.changedAt).toLocaleString()}
+          </Typography>
+        )}
       </Box>
-      <PreviousNewTable
-        fields={fields}
-        previous={transaction.parsedOldData}
-        next={transaction.parsedNewData}
-      />
-    </Stack>
+      <Box p={2}>{body}</Box>
+    </Paper>
   );
 };
 
@@ -176,9 +216,9 @@ export function AuditTransactionPage() {
 
   return (
     <Box p={3}>
-      <Button variant="outlined" size="small" onClick={() => navigate(`/practitioners/${id}`)} sx={{ mb: 2 }}>
+      {/* <Button variant="outlined" size="small" onClick={() => navigate(`/practitioners/${id}`)} sx={{ mb: 2 }}>
         Back
-      </Button>
+      </Button> */}
 
       <Typography variant="h5" fontWeight={600} mb={2}>
         Audit Transaction
@@ -202,19 +242,18 @@ export function AuditTransactionPage() {
           </TextField>
         </Box>
 
-        <List>
-          {selectedEntity && filteredTransactions.map((transaction) => (
-            <ListItem key={transaction.id} divider>
-              {renderTransaction(transaction)}
-            </ListItem>
-          ))}
-          {!selectedEntity && (
-            <ListItem><ListItemText primary="Select an entity type to view its transactions." /></ListItem>
-          )}
-          {selectedEntity && filteredTransactions.length === 0 && (
-            <ListItem><ListItemText primary="No Data Available" /></ListItem>
-          )}
-        </List>
+        {selectedEntity ? (
+          <Stack gap={2}>
+            {filteredTransactions.map((transaction) => (
+              <Box key={transaction.id}>{renderTransaction(transaction)}</Box>
+            ))}
+            {filteredTransactions.length === 0 && (
+              <Typography color="text.secondary">No Data Available</Typography>
+            )}
+          </Stack>
+        ) : (
+          <Typography color="text.secondary">Select an entity type to view its transactions.</Typography>
+        )}
       </Paper>
     </Box>
   );

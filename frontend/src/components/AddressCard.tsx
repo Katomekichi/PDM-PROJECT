@@ -21,7 +21,7 @@ export default function AddressCard({
                 <IconButton
                     size="small"
                     color="error"
-                    // onClick={onDelete}
+                    onClick={onDelete}
                     disabled={practitionerAddress.primary}
                 >
                     <DeleteIcon fontSize="small" />
