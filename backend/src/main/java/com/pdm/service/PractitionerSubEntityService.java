@@ -25,19 +25,27 @@ public interface PractitionerSubEntityService {
     // ── License ──
     LicenseResponse addLicense(UUID practitionerId, LicenseRequest request);
     List<LicenseResponse> getLicenses(UUID practitionerId);
+    LicenseResponse updateLicense(UUID practitionerId, UUID licenseId, LicenseRequest request);
+    LicenseResponse deleteLicense(UUID practitionerId, UUID licenseId);
 
     // ── Credentialing ──
     CredentialingResponse addCredentialing(UUID practitionerId, CredentialingRequest request);
     List<CredentialingResponse> getCredentialings(UUID practitionerId);
+    CredentialingResponse updateCredentialing(UUID practitionerId, UUID credentialingId, CredentialingRequest request);
+    CredentialingResponse deleteCredentialing(UUID practitionerId, UUID credentialingId);
 
     // ── Attestation ──
     AttestationResponse addAttestation(UUID practitionerId, AttestationRequest request);
     List<AttestationResponse> getAttestations(UUID practitionerId);
+    AttestationResponse updateAttestation(UUID practitionerId, UUID attestationId, AttestationRequest request);
+    AttestationResponse deleteAttestation(UUID practitionerId, UUID attestationId);
 
     // ── Notes ──
     // NoteResponse addNote(UUID practitionerId, NoteRequest request, String authorUsername);
     NoteResponse addNote(UUID practitionerId, NoteRequest request);
     List<NoteResponse> getNotes(UUID practitionerId);
+    NoteResponse updateNote(UUID practitionerId, UUID noteId, NoteRequest request);
+    NoteResponse deleteNote(UUID practitionerId, UUID noteId);
 
     // Address
     AddressResponse addAddress(UUID practitionerId, AddressRequest request);

@@ -11,17 +11,9 @@ public interface AuditTransactionService {
         UUID entityId,
         UUID parentId,
         String operation,
-        Object data
+        Object oldValue,
+        Object newValue
     );
 
     List<AuditTransactionResponse> getTransactions(UUID practitionerId);
-
-    // void updateAudit(
-    //     String entityType,
-    //     UUID entityId,
-    //     String operation,
-    //     String field,
-    //     String oldValue,
-    //     String newValue
-    // );
 }

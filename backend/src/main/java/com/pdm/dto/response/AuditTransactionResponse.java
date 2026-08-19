@@ -23,4 +23,8 @@ public class AuditTransactionResponse {
     private Instant changedAt;
 
     private String data;
+
+    private String oldData;
+
+    private String newData;
 }

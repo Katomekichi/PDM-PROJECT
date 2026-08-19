@@ -24,7 +24,8 @@ public class AuditTransactionServiceImpl implements AuditTransactionService {
             UUID entityId,
             UUID parentId,
             String operation,
-            Object data) {
+            Object oldValue,
+            Object newValue) {
 
         AuditTransaction audit = new AuditTransaction();
 
@@ -35,7 +36,8 @@ public class AuditTransactionServiceImpl implements AuditTransactionService {
         audit.setOperation(operation);
 
         try {
-            audit.setData(objectMapper.writeValueAsString(data));
+            audit.setOldData(oldValue != null ? objectMapper.writeValueAsString(oldValue) : null);
+            audit.setNewData(newValue != null ? objectMapper.writeValueAsString(newValue) : null);
         } catch (Exception e) {
             e.printStackTrace();
             throw new RuntimeException("Unable to serialize audit data", e);
@@ -67,6 +69,8 @@ public class AuditTransactionServiceImpl implements AuditTransactionService {
         operation(audit.getOperation()).
         changedBy(audit.getChangedBy()).
         changedAt(audit.getChangedAt()).
-        data(audit.getData()).build();
+        data(audit.getData()).
+        oldData(audit.getOldData()).
+        newData(audit.getNewData()).build();
     }
 }

@@ -27,6 +27,12 @@ public class AuditTransaction {
     @Column(columnDefinition = "TEXT")
     private String data;
 
+    @Column(name = "old_data", columnDefinition = "TEXT")
+    private String oldData;
+
+    @Column(name = "new_data", columnDefinition = "TEXT")
+    private String newData;
+
     private String changedBy;
 
     private Instant changedAt;

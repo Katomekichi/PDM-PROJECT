@@ -56,6 +56,7 @@ public class PractitionerSubEntityServiceImpl implements PractitionerSubEntitySe
             saved.getId(),
             practitionerId,
             "CREATE",
+            null,
             response
         );
 
@@ -73,6 +74,8 @@ public class PractitionerSubEntityServiceImpl implements PractitionerSubEntitySe
             specialtyRepository.findById(specialtyId)
                 .orElseThrow(() -> new ResourceNotFoundException("Specialty not found"));
 
+        SpecialtyResponse before = toSpecialtyResponse(specialty);
+
         specialty.setTaxonomyCode(request.getTaxonomyCode());
         specialty.setTaxonomyDescription(request.getTaxonomyDescription());
         specialty.setHsdCode(request.getHsdCode());
@@ -82,7 +85,18 @@ public class PractitionerSubEntityServiceImpl implements PractitionerSubEntitySe
 
         specialtyRepository.save(specialty);
 
-        return toSpecialtyResponse(specialty);
+        SpecialtyResponse after = toSpecialtyResponse(specialty);
+
+        auditService.createAudit(
+            "SPECIALTY",
+            specialty.getId(),
+            practitionerId,
+            "UPDATE",
+            before,
+            after
+        );
+
+        return after;
     }
 
     @Override
@@ -95,8 +109,20 @@ public class PractitionerSubEntityServiceImpl implements PractitionerSubEntitySe
             specialtyRepository.findById(specialtyId)
                 .orElseThrow(() -> new ResourceNotFoundException("Specialty not found"));
 
+        SpecialtyResponse before = toSpecialtyResponse(specialty);
+
         specialtyRepository.delete(specialty);
-        return toSpecialtyResponse(specialty);
+
+        auditService.createAudit(
+            "SPECIALTY",
+            specialty.getId(),
+            practitionerId,
+            "DELETE",
+            before,
+            null
+        );
+
+        return before;
     }
 
     @Override
@@ -129,6 +155,7 @@ public class PractitionerSubEntityServiceImpl implements PractitionerSubEntitySe
             saved.getId(),
             practitionerId,
             "CREATE",
+            null,
             response
         );
 
@@ -141,6 +168,45 @@ public class PractitionerSubEntityServiceImpl implements PractitionerSubEntitySe
     public List<LicenseResponse> getLicenses(UUID practitionerId) {
         return licenseRepository.findByPractitionerId(practitionerId)
                 .stream().map(this::toLicenseResponse).collect(Collectors.toList());
+    }
+
+    @Override
+    @Transactional
+    public LicenseResponse updateLicense(UUID practitionerId, UUID licenseId, LicenseRequest request) {
+        PractitionerLicense license = licenseRepository.findById(licenseId)
+                .orElseThrow(() -> new ResourceNotFoundException("License not found"));
+
+        LicenseResponse before = toLicenseResponse(license);
+
+        license.setLicenseType(request.getLicenseType());
+        license.setLicenseNumber(request.getLicenseNumber());
+        license.setState(request.getState());
+        license.setCountry(request.getCountry());
+        license.setIssuedDate(request.getIssuedDate());
+        license.setExpiryDate(request.getExpiryDate());
+        license.setDoNotDisplayInDirectory(request.isDoNotDisplayInDirectory());
+
+        licenseRepository.save(license);
+        LicenseResponse after = toLicenseResponse(license);
+
+        auditService.createAudit("LICENSE", license.getId(), practitionerId, "UPDATE", before, after);
+
+        return after;
+    }
+
+    @Override
+    @Transactional
+    public LicenseResponse deleteLicense(UUID practitionerId, UUID licenseId) {
+        PractitionerLicense license = licenseRepository.findById(licenseId)
+                .orElseThrow(() -> new ResourceNotFoundException("License not found"));
+
+        LicenseResponse before = toLicenseResponse(license);
+
+        licenseRepository.delete(license);
+
+        auditService.createAudit("LICENSE", license.getId(), practitionerId, "DELETE", before, null);
+
+        return before;
     }
 
     // ── Credentialing ──────────────────────────────────────────────────────────
@@ -168,6 +234,7 @@ public class PractitionerSubEntityServiceImpl implements PractitionerSubEntitySe
             saved.getId(),
             practitionerId,
             "CREATE",
+            null,
             response
         );
 
@@ -180,6 +247,49 @@ public class PractitionerSubEntityServiceImpl implements PractitionerSubEntitySe
     public List<CredentialingResponse> getCredentialings(UUID practitionerId) {
         return credentialingRepository.findByPractitionerId(practitionerId)
                 .stream().map(this::toCredentialingResponse).collect(Collectors.toList());
+    }
+
+    @Override
+    @Transactional
+    public CredentialingResponse updateCredentialing(UUID practitionerId, UUID credentialingId, CredentialingRequest request) {
+        PractitionerCredentialing credentialing = credentialingRepository.findById(credentialingId)
+                .orElseThrow(() -> new ResourceNotFoundException("Credentialing record not found"));
+
+        CredentialingResponse before = toCredentialingResponse(credentialing);
+
+        credentialing.setCredentialingType(request.getCredentialingType());
+        credentialing.setCredentialingStatus(request.getCredentialingStatus());
+        credentialing.setCredentialSource(request.getCredentialSource());
+        credentialing.setSourceAssociateName(request.getSourceAssociateName());
+        credentialing.setState(request.getState());
+        credentialing.setDateSentToEntity(request.getDateSentToEntity());
+        credentialing.setEffectiveDate(request.getEffectiveDate());
+        credentialing.setExpiryDate(request.getExpiryDate());
+        credentialing.setDisciplinaryActionReason(request.getDisciplinaryActionReason());
+        credentialing.setProcessingActionNote(request.getProcessingActionNote());
+        credentialing.setProcessingStatus(request.getProcessingStatus() != null ? request.getProcessingStatus() : ProcessingStatus.NONE);
+
+        credentialingRepository.save(credentialing);
+        CredentialingResponse after = toCredentialingResponse(credentialing);
+
+        auditService.createAudit("CREDENTIALING", credentialing.getId(), practitionerId, "UPDATE", before, after);
+
+        return after;
+    }
+
+    @Override
+    @Transactional
+    public CredentialingResponse deleteCredentialing(UUID practitionerId, UUID credentialingId) {
+        PractitionerCredentialing credentialing = credentialingRepository.findById(credentialingId)
+                .orElseThrow(() -> new ResourceNotFoundException("Credentialing record not found"));
+
+        CredentialingResponse before = toCredentialingResponse(credentialing);
+
+        credentialingRepository.delete(credentialing);
+
+        auditService.createAudit("CREDENTIALING", credentialing.getId(), practitionerId, "DELETE", before, null);
+
+        return before;
     }
 
     // ── Attestation ────────────────────────────────────────────────────────────
@@ -203,6 +313,7 @@ public class PractitionerSubEntityServiceImpl implements PractitionerSubEntitySe
             saved.getId(),
             practitionerId,
             "CREATE",
+            null,
             response
         );
 
@@ -215,6 +326,45 @@ public class PractitionerSubEntityServiceImpl implements PractitionerSubEntitySe
     public List<AttestationResponse> getAttestations(UUID practitionerId) {
         return attestationRepository.findByPractitionerId(practitionerId)
                 .stream().map(this::toAttestationResponse).collect(Collectors.toList());
+    }
+
+    @Override
+    @Transactional
+    public AttestationResponse updateAttestation(UUID practitionerId, UUID attestationId, AttestationRequest request) {
+        PractitionerAttestation attestation = attestationRepository.findById(attestationId)
+                .orElseThrow(() -> new ResourceNotFoundException("Attestation not found"));
+
+        AttestationResponse before = toAttestationResponse(attestation);
+
+        attestation.setAttestationStatus(request.getAttestationStatus());
+        attestation.setAttestationSource(request.getAttestationSource());
+        attestation.setRequestedDate(request.getRequestedDate());
+        attestation.setLastAttestationDate(request.getLastAttestationDate());
+        attestation.setNextAttestationDue(
+            request.getLastAttestationDate() != null ? request.getLastAttestationDate().plusDays(90) : null
+        );
+
+        attestationRepository.save(attestation);
+        AttestationResponse after = toAttestationResponse(attestation);
+
+        auditService.createAudit("ATTESTATION", attestation.getId(), practitionerId, "UPDATE", before, after);
+
+        return after;
+    }
+
+    @Override
+    @Transactional
+    public AttestationResponse deleteAttestation(UUID practitionerId, UUID attestationId) {
+        PractitionerAttestation attestation = attestationRepository.findById(attestationId)
+                .orElseThrow(() -> new ResourceNotFoundException("Attestation not found"));
+
+        AttestationResponse before = toAttestationResponse(attestation);
+
+        attestationRepository.delete(attestation);
+
+        auditService.createAudit("ATTESTATION", attestation.getId(), practitionerId, "DELETE", before, null);
+
+        return before;
     }
 
     // ── Notes ──────────────────────────────────────────────────────────────────
@@ -233,6 +383,7 @@ public class PractitionerSubEntityServiceImpl implements PractitionerSubEntitySe
             saved.getId(),
             practitionerId,
             "CREATE",
+            null,
             response
         );
 
@@ -245,6 +396,39 @@ public class PractitionerSubEntityServiceImpl implements PractitionerSubEntitySe
     public List<NoteResponse> getNotes(UUID practitionerId) {
         return noteRepository.findByPractitionerIdOrderByCreatedAtAsc(practitionerId)
                 .stream().map(this::toNoteResponse).collect(Collectors.toList());
+    }
+
+    @Override
+    @Transactional
+    public NoteResponse updateNote(UUID practitionerId, UUID noteId, NoteRequest request) {
+        PractitionerNote note = noteRepository.findById(noteId)
+                .orElseThrow(() -> new ResourceNotFoundException("Note not found"));
+
+        NoteResponse before = toNoteResponse(note);
+
+        note.setContent(request.getContent());
+
+        noteRepository.save(note);
+        NoteResponse after = toNoteResponse(note);
+
+        auditService.createAudit("NOTES", note.getId(), practitionerId, "UPDATE", before, after);
+
+        return after;
+    }
+
+    @Override
+    @Transactional
+    public NoteResponse deleteNote(UUID practitionerId, UUID noteId) {
+        PractitionerNote note = noteRepository.findById(noteId)
+                .orElseThrow(() -> new ResourceNotFoundException("Note not found"));
+
+        NoteResponse before = toNoteResponse(note);
+
+        noteRepository.delete(note);
+
+        auditService.createAudit("NOTES", note.getId(), practitionerId, "DELETE", before, null);
+
+        return before;
     }
 
     // Address
@@ -268,6 +452,7 @@ public class PractitionerSubEntityServiceImpl implements PractitionerSubEntitySe
             saved.getId(),
             practitionerId,
             "CREATE",
+            null,
             response
         );
 
@@ -276,9 +461,13 @@ public class PractitionerSubEntityServiceImpl implements PractitionerSubEntitySe
     }
 
     @Override
+    @Transactional
     public AddressResponse updateAddress(UUID practitionerId, UUID addressId, AddressRequest req) {
         PractitionerAddress address = addressRepository.findById(addressId)
         .orElseThrow(() -> new ResourceNotFoundException("Address not found"));
+
+        AddressResponse before = toAddressResponse(address);
+
         address.setAddressLine1(req.getAddressLine1());
         address.setPhone(req.getPhone());
         address.setCity(req.getCity());
@@ -287,18 +476,27 @@ public class PractitionerSubEntityServiceImpl implements PractitionerSubEntitySe
         address.setPincode(req.getPincode());
         address.setPrimary(req.isPrimary());
         addressRepository.save(address);
-        return toAddressResponse(address);
+        AddressResponse after = toAddressResponse(address);
+
+        auditService.createAudit("ADDRESS", address.getId(), practitionerId, "UPDATE", before, after);
+
+        return after;
     }
     @Override
     @Transactional
     public AddressResponse deleteAddress(UUID practitionerId, UUID addressId) {
         PractitionerAddress address =
             addressRepository.findById(addressId)
-                .orElseThrow(() -> new ResourceNotFoundException("Specialty not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Address not found"));
+
+        AddressResponse before = toAddressResponse(address);
 
         addressRepository.delete(address);
-        return toAddressResponse(address);
-    } 
+
+        auditService.createAudit("ADDRESS", address.getId(), practitionerId, "DELETE", before, null);
+
+        return before;
+    }
 
     @Override
     @Transactional(readOnly = true)

@@ -78,6 +78,23 @@ public class PractitionerSubEntityController {
         return service.getLicenses(practitionerId);
     }
 
+    @PutMapping("/licenses/{licenseId}")
+    @ResponseStatus(HttpStatus.OK)
+    public LicenseResponse updateLicense(
+            @PathVariable UUID practitionerId,
+            @PathVariable UUID licenseId,
+            @Valid @RequestBody LicenseRequest request) {
+        return service.updateLicense(practitionerId, licenseId, request);
+    }
+
+    @DeleteMapping("/licenses/{licenseId}")
+    @ResponseStatus(HttpStatus.OK)
+    public LicenseResponse deleteLicense(
+            @PathVariable UUID practitionerId,
+            @PathVariable UUID licenseId) {
+        return service.deleteLicense(practitionerId, licenseId);
+    }
+
     // ── Credentialing ──────────────────────────────────────────────────────────
     @PostMapping("/credentialings")
     @ResponseStatus(HttpStatus.CREATED)
@@ -92,6 +109,23 @@ public class PractitionerSubEntityController {
         return service.getCredentialings(practitionerId);
     }
 
+    @PutMapping("/credentialings/{credentialingId}")
+    @ResponseStatus(HttpStatus.OK)
+    public CredentialingResponse updateCredentialing(
+            @PathVariable UUID practitionerId,
+            @PathVariable UUID credentialingId,
+            @Valid @RequestBody CredentialingRequest request) {
+        return service.updateCredentialing(practitionerId, credentialingId, request);
+    }
+
+    @DeleteMapping("/credentialings/{credentialingId}")
+    @ResponseStatus(HttpStatus.OK)
+    public CredentialingResponse deleteCredentialing(
+            @PathVariable UUID practitionerId,
+            @PathVariable UUID credentialingId) {
+        return service.deleteCredentialing(practitionerId, credentialingId);
+    }
+
     // ── Attestation ────────────────────────────────────────────────────────────
     @PostMapping("/attestations")
     @ResponseStatus(HttpStatus.CREATED)
@@ -104,6 +138,23 @@ public class PractitionerSubEntityController {
     @GetMapping("/attestations")
     public List<AttestationResponse> getAttestations(@PathVariable UUID practitionerId) {
         return service.getAttestations(practitionerId);
+    }
+
+    @PutMapping("/attestations/{attestationId}")
+    @ResponseStatus(HttpStatus.OK)
+    public AttestationResponse updateAttestation(
+            @PathVariable UUID practitionerId,
+            @PathVariable UUID attestationId,
+            @Valid @RequestBody AttestationRequest request) {
+        return service.updateAttestation(practitionerId, attestationId, request);
+    }
+
+    @DeleteMapping("/attestations/{attestationId}")
+    @ResponseStatus(HttpStatus.OK)
+    public AttestationResponse deleteAttestation(
+            @PathVariable UUID practitionerId,
+            @PathVariable UUID attestationId) {
+        return service.deleteAttestation(practitionerId, attestationId);
     }
 
     // ── Notes ──────────────────────────────────────────────────────────────────
@@ -132,6 +183,23 @@ public class PractitionerSubEntityController {
         return service.getNotes(practitionerId);
     }
 
+    @PutMapping("/notes/{noteId}")
+    @ResponseStatus(HttpStatus.OK)
+    public NoteResponse updateNote(
+            @PathVariable UUID practitionerId,
+            @PathVariable UUID noteId,
+            @Valid @RequestBody NoteRequest request) {
+        return service.updateNote(practitionerId, noteId, request);
+    }
+
+    @DeleteMapping("/notes/{noteId}")
+    @ResponseStatus(HttpStatus.OK)
+    public NoteResponse deleteNote(
+            @PathVariable UUID practitionerId,
+            @PathVariable UUID noteId) {
+        return service.deleteNote(practitionerId, noteId);
+    }
+
     // Address
     @PostMapping("/address")
     @ResponseStatus(HttpStatus.CREATED)
@@ -148,13 +216,13 @@ public class PractitionerSubEntityController {
 
     @PutMapping("/address/{addressId}")
     @ResponseStatus(HttpStatus.OK)
-    public AddressResponse updateAddress(@PathVariable UUID practitionerId, UUID addressId, @RequestBody AddressRequest request) {
+    public AddressResponse updateAddress(@PathVariable UUID practitionerId, @PathVariable UUID addressId, @RequestBody AddressRequest request) {
         return service.updateAddress(practitionerId, addressId, request);
     }
 
-    @DeleteMapping("address/{addressId}")
+    @DeleteMapping("/address/{addressId}")
     @ResponseStatus(HttpStatus.OK)
-    public AddressResponse deleteAddress(@PathVariable UUID practitionerId, UUID addressId) {
+    public AddressResponse deleteAddress(@PathVariable UUID practitionerId, @PathVariable UUID addressId) {
         return service.deleteAddress(practitionerId, addressId);
     }
 }

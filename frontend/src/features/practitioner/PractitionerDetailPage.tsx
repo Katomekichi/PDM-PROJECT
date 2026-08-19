@@ -105,7 +105,7 @@ export function PractitionerDetailPage() {
   return (
     <Box p={3} display="flex" flexDirection="column" height="100vh" boxSizing="border-box">
       {/* ── Back button ── */}
-      <Button variant="outlined" size="small" onClick={() => navigate(`/practitioners`)} sx={{ mb: 2, flexShrink: 0 }}>Back</Button>
+      {/* <Button variant="outlined" size="small" onClick={() => navigate(`/practitioners`)} sx={{ mb: 2, flexShrink: 0 }}>Back</Button> */}
 
       {/* ── Header: practitioner info left, actions right ── */}
       <Paper variant="outlined" sx={{ p: 2, mb: 3, flexShrink: 0 }}>

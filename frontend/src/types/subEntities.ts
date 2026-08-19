@@ -151,5 +151,9 @@ export interface Transaction {
   parentId?: string;
   operation?: string;
   section?: string;
+  changedBy?: string;
+  changedAt?: string;
   data?: string;
+  oldData?: string;
+  newData?: string;
 }
