@@ -15,6 +15,6 @@ export const apiSlice = createApi({
     },
   }),
   tagTypes: ['Practitioner', 'Organization', 'OrganizationLocation', 'PractitionerRole',
-             'Specialty', 'License', 'Credentialing', 'Attestation', 'Note'],
+             'Specialty', 'License', 'Credentialing', 'Attestation', 'Note', 'Ticket', 'DqRule'],
   endpoints: () => ({}),
 });

@@ -7,12 +7,17 @@ export interface DashboardCard {
 export const dashboardCards: DashboardCard[] = [
   {
     id: 1,
-    title: 'Practitioners',
-    route: '/practitioners'
+    title: 'Provider Data Manager',
+    route: '/provider-data-manager'
   },
   {
     id: 2,
-    title: 'Organizations',
-    route: '/organizations'
+    title: 'Provider Service Manager',
+    route: '/provider-service-manager'
+  },
+  {
+    id: 3,
+    title: 'Provider Reporting Manager',
+    route: '/provider-reporting-manager'
   }
 ];

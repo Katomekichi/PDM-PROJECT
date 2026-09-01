@@ -1,4 +1,4 @@
-import { Box, Button, Typography, Chip, Stack } from '@mui/material';
+import { Box, Typography, Chip, Stack } from '@mui/material';
 import { DataGrid, type GridColDef } from '@mui/x-data-grid';
 import { useNavigate } from 'react-router-dom';
 import { useGetOrganizationsQuery } from './organizationApi';
@@ -23,7 +23,6 @@ export function OrganizationListPage() {
     <Box p={3}>
       <Stack direction="row" justifyContent="space-between" alignItems="center" mb={2}>
         <Typography variant="h5">Organizations</Typography>
-        <Button variant="contained" onClick={() => navigate('/organizations/new')}>+ New Organization</Button>
       </Stack>
       <DataGrid
         rows={data?.content ?? []}

@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Box, Button, TextField, Typography, Chip, Stack } from '@mui/material';
+import { Box, TextField, Typography, Chip, Stack } from '@mui/material';
 import { DataGrid, type GridColDef } from '@mui/x-data-grid';
 import { useNavigate } from 'react-router-dom';
 import { useSearchPractitionersQuery } from './practitionerApi';
@@ -38,9 +38,6 @@ export function PractitionerListPage() {
     <Box p={3}>
       <Stack direction="row" justifyContent="space-between" alignItems="center" mb={2}>
         <Typography variant="h5">Practitioners</Typography>
-        <Button variant="contained" onClick={() => navigate('/practitioners/new')}>
-          + New Practitioner
-        </Button>
       </Stack>
 
       <TextField

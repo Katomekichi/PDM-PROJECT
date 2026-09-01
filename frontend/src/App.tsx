@@ -14,12 +14,17 @@ import { ProtectedRoute } from './components/ProtectedRoute';
 import { LoginPage } from './features/auth/LoginPage';
 import { PractitionerListPage } from './features/practitioner/PractitionerListPage';
 import { PractitionerFormPage } from './features/practitioner/PractitionerFormPage';
+import { PractitionerReviewPage } from './features/practitioner/PractitionerReviewPage';
 import { PractitionerDetailPage } from './features/practitioner/PractitionerDetailPage';
 import { AuditTransactionPage } from './features/practitioner/AuditTransactionPage';
 import { OrganizationListPage } from './features/organization/OrganizationListPage';
 import { OrganizationFormPage } from './features/organization/OrganizationFormPage';
+import { OrganizationReviewPage } from './features/organization/OrganizationReviewPage';
 import { OrganizationDetailPage } from './features/organization/OrganizationDetailPage';
 import Dashboard from './features/dashboard/Dashboard';
+import ProviderDataManagerPage from './features/providerDataManager/ProviderDataManagerPage';
+import ProviderServiceManagerPage from './features/providerServiceManager/ProviderServiceManagerPage';
+import ProviderReportingManagerPage from './features/providerReportingManager/ProviderReportingManagerPage';
 
 // Returns initials from a full name string (e.g. "John Doe" → "JD")
 function getInitials(name: string | null): string {
@@ -152,13 +157,18 @@ export default function App() {
           <Routes>
             <Route path="/login" element={<LoginPage />} />
             <Route path="/" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
+            <Route path="/provider-data-manager" element={<ProtectedRoute><ProviderDataManagerPage /></ProtectedRoute>} />
+            <Route path="/provider-service-manager" element={<ProtectedRoute><ProviderServiceManagerPage /></ProtectedRoute>} />
+            <Route path="/provider-reporting-manager" element={<ProtectedRoute><ProviderReportingManagerPage /></ProtectedRoute>} />
             <Route path="/practitioners" element={<ProtectedRoute><PractitionerListPage /></ProtectedRoute>} />
             <Route path="/practitioners/new" element={<ProtectedRoute><PractitionerFormPage /></ProtectedRoute>} />
+            <Route path="/practitioners/new/review" element={<ProtectedRoute><PractitionerReviewPage /></ProtectedRoute>} />
             <Route path="/practitioners/:id/edit" element={<ProtectedRoute><PractitionerFormPage /></ProtectedRoute>} />
             <Route path="/practitioners/:id" element={<ProtectedRoute><PractitionerDetailPage /></ProtectedRoute>} />
             <Route path="/practitioners/:id/audit-transactions" element={<ProtectedRoute><AuditTransactionPage /></ProtectedRoute>} />
             <Route path="/organizations" element={<ProtectedRoute><OrganizationListPage /></ProtectedRoute>} />
             <Route path="/organizations/new" element={<ProtectedRoute><OrganizationFormPage /></ProtectedRoute>} />
+            <Route path="/organizations/new/review" element={<ProtectedRoute><OrganizationReviewPage /></ProtectedRoute>} />
             <Route path="/organizations/:id" element={<ProtectedRoute><OrganizationDetailPage /></ProtectedRoute>} />
           </Routes>
         </Box>

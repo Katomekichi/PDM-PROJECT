@@ -2,7 +2,7 @@ import { useEffect, useState, type SyntheticEvent } from 'react';
 import {
   Box, Typography, Paper, Stack, Chip, Button, Tabs, Tab, Divider,
   List, ListItem, ListItemText, TextField, MenuItem, Dialog, DialogTitle,
-  DialogContent, DialogActions, FormControlLabel, Checkbox, Alert,
+  DialogContent, DialogActions, FormControlLabel, Checkbox, Alert, Snackbar,
 } from '@mui/material';
 import { useNavigate, useParams } from 'react-router-dom';
 import { Controller, useForm } from 'react-hook-form';
@@ -76,6 +76,7 @@ export function PractitionerDetailPage() {
   const [attestOpen, setAttestOpen] = useState(false);
   const [noteOpen, setNoteOpen] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState<{ type: 'SPECIALTY' | 'ADDRESS' | 'LICENSE' | 'CREDENTIALING' | 'ATTESTATION' | 'NOTE'; id: string } | null>(null);
+  const [actionError, setActionError] = useState<string | null>(null);
   // Sections fetch lazily on first visit, then stay cached — avoids firing all 7 sub-entity
   // queries up front for every practitioner, which won't scale as more sections/data are added.
   const [visitedTabs, setVisitedTabs] = useState<Set<number>>(new Set([0]));
@@ -421,29 +422,40 @@ export function PractitionerDetailPage() {
         onConfirm={async () => {
           if (!confirmDelete) return;
           const { type, id: entityId } = confirmDelete;
+          let result;
           switch (type) {
             case 'SPECIALTY':
-              await deleteSpecialty({ practitionerId: id!, specialtiesId: entityId });
+              result = await deleteSpecialty({ practitionerId: id!, specialtiesId: entityId });
               break;
             case 'ADDRESS':
-              await deleteAddress({ practitionerId: id!, addressId: entityId });
+              result = await deleteAddress({ practitionerId: id!, addressId: entityId });
               break;
             case 'LICENSE':
-              await deleteLicense({ practitionerId: id!, licenseId: entityId });
+              result = await deleteLicense({ practitionerId: id!, licenseId: entityId });
               break;
             case 'CREDENTIALING':
-              await deleteCredentialing({ practitionerId: id!, credentialingId: entityId });
+              result = await deleteCredentialing({ practitionerId: id!, credentialingId: entityId });
               break;
             case 'ATTESTATION':
-              await deleteAttestation({ practitionerId: id!, attestationId: entityId });
+              result = await deleteAttestation({ practitionerId: id!, attestationId: entityId });
               break;
             case 'NOTE':
-              await deleteNote({ practitionerId: id!, noteId: entityId });
+              result = await deleteNote({ practitionerId: id!, noteId: entityId });
               break;
           }
-          setConfirmDelete(null);
+          if (result && 'error' in result) {
+            setActionError((result.error as any)?.data?.message ?? 'Action failed');
+          } else {
+            setConfirmDelete(null);
+          }
         }}
       />
+
+      <Snackbar open={!!actionError} autoHideDuration={6000} onClose={() => setActionError(null)}>
+        <Alert severity="error" onClose={() => setActionError(null)} sx={{ width: '100%' }}>
+          {actionError}
+        </Alert>
+      </Snackbar>
     </Box>
   );
 }
@@ -811,6 +823,9 @@ function AddSpecialtyDialog({ open, practitionerId, specialty, onClose }: { open
   const [addSpecialty, { isLoading: adding }] =
       useAddSpecialtyMutation();
 
+  const [error, setError] = useState<string | null>(null);
+  useEffect(() => { setError(null); }, [open]);
+
   const isLoading = adding || updating;
   const onSubmit = async (body: SpecialtyFormValues) => {
     try {
@@ -830,7 +845,7 @@ function AddSpecialtyDialog({ open, practitionerId, specialty, onClose }: { open
       reset();
       onClose();
     } catch (err) {
-      console.error(err);
+      setError((err as any)?.data?.message ?? 'Failed to save specialty');
     }
   };
   return (
@@ -841,6 +856,7 @@ function AddSpecialtyDialog({ open, practitionerId, specialty, onClose }: { open
       <form onSubmit={handleSubmit(onSubmit)}>
         <DialogContent>
           <Stack spacing={2} mt={1}>
+            {error && <Alert severity="error">{error}</Alert>}
             <Controller name="taxonomyCode" control={control} rules={{ required: true }}
               render={({ field }) => <TextField {...field} label="Taxonomy Code (e.g. Cardiology)" />} />
             <Controller name="taxonomyDescription" control={control}

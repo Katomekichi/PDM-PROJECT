@@ -2,8 +2,9 @@ import { Controller, useForm } from 'react-hook-form';
 import {
   Box, Button, Checkbox, FormControlLabel, MenuItem, Paper, Stack, TextField, Typography, Alert,
 } from '@mui/material';
-import { useNavigate, useParams } from 'react-router-dom';
-import { useGetPractitionerQuery, useCreatePractitionerMutation, useUpdatePractitionerMutation } from './practitionerApi';
+import { useLocation, useNavigate, useParams } from 'react-router-dom';
+import { useGetPractitionerQuery, useUpdatePractitionerMutation } from './practitionerApi';
+import { useCreateTicketMutation, useUpdateTicketStatusMutation } from '../ticket/ticketApi';
 import type { PractitionerFormValues } from '@/types/practitioner';
 import { useEffect } from 'react';
 
@@ -19,10 +20,13 @@ export function PractitionerFormPage() {
   const { id } = useParams<{ id: string }>();
   const isEdit = id !== 'new';
   const navigate = useNavigate();
+  const location = useLocation();
+  const ticketId = (location.state as { ticketId?: string } | null)?.ticketId;
 
   const { data: existing } = useGetPractitionerQuery(id!, { skip: !isEdit });
-  const [createPractitioner, { isLoading: creating, error: createError }] = useCreatePractitionerMutation();
   const [updatePractitioner, { isLoading: updating, error: updateError }] = useUpdatePractitionerMutation();
+  const [createTicket] = useCreateTicketMutation();
+  const [updateTicketStatus] = useUpdateTicketStatusMutation();
 
   const { control, handleSubmit, reset } = useForm<PractitionerFormValues>({
     defaultValues: {
@@ -56,12 +60,23 @@ export function PractitionerFormPage() {
       const result = await updatePractitioner({ id, body: values });
       if (!('error' in result)) navigate(`/practitioners/${id}`);
     } else {
-      const result = await createPractitioner(values);
-      if ('data' in result && result.data) navigate(`/practitioners/${result.data.id}`);
+      // The ticket only comes into existence here, once the form is actually submitted -
+      // that's what makes it show up in the Provider Service Manager queue.
+      let activeTicketId = ticketId;
+      if (!activeTicketId) {
+        const result = await createTicket({ entityType: 'PRACTITIONER' });
+        if ('data' in result && result.data) activeTicketId = result.data.id;
+      }
+      navigate('/practitioners/new/review', { state: { ticketId: activeTicketId, values } });
     }
   };
 
-  const error = createError ?? updateError;
+  const handleCancel = async () => {
+    if (ticketId) await updateTicketStatus({ id: ticketId, status: 'CANCELED' });
+    navigate('/provider-service-manager');
+  };
+
+  const error = updateError;
 
   return (
     <Box p={3} maxWidth={640}>
@@ -116,10 +131,10 @@ export function PractitionerFormPage() {
               )} />
 
             <Stack direction="row" spacing={2}>
-              <Button type="submit" variant="contained" disabled={creating || updating}>
-                {isEdit ? 'Save Changes' : 'Create Practitioner'}
+              <Button type="submit" variant="contained" disabled={updating}>
+                {isEdit ? 'Save Changes' : 'Review & Create'}
               </Button>
-              <Button variant="text" onClick={() => navigate(-1)}>Cancel</Button>
+              <Button variant="text" onClick={isEdit ? () => navigate(-1) : handleCancel}>Cancel</Button>
             </Stack>
           </Stack>
         </form>

@@ -5,6 +5,7 @@ import com.pdm.dto.response.*;
 import com.pdm.entity.*;
 import com.pdm.service.*;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.pdm.exception.DqRuleViolationException;
 import com.pdm.exception.ResourceNotFoundException;
 import com.pdm.repository.*;
 
@@ -32,10 +33,30 @@ public class PractitionerSubEntityServiceImpl implements PractitionerSubEntitySe
     private final PractitionerNoteRepository noteRepository;
     private final PractitionerAddressRepository addressRepository;
     private final AuditTransactionService auditService;
+    private final DqRuleRepository dqRuleRepository;
+
+    /**
+     * DQ1 ("Specialty" / PRACTITIONER, REQUIRED, active) encodes the rule "at least one
+     * Specialty must be marked primary". It's looked up by convention (entityType + fieldName)
+     * rather than through a generic rule interpreter, so toggling DQ1 inactive in the DQ Rules
+     * screen turns this check off without a deploy.
+     */
+    private void ensureAtLeastOnePrimarySpecialty(UUID practitionerId, UUID excludeSpecialtyId, boolean candidatePrimary) {
+        dqRuleRepository.findByEntityTypeAndFieldNameIgnoreCaseAndActiveTrue(DqEntityType.PRACTITIONER, "Specialty")
+                .ifPresent(rule -> {
+                    boolean anotherIsPrimary = specialtyRepository.findByPractitionerId(practitionerId).stream()
+                            .filter(s -> excludeSpecialtyId == null || !s.getId().equals(excludeSpecialtyId))
+                            .anyMatch(PractitionerSpecialty::isPrimary);
+                    if (!anotherIsPrimary && !candidatePrimary) {
+                        throw new DqRuleViolationException(rule.getErrorMessage());
+                    }
+                });
+    }
 
     // ── Specialty ──────────────────────────────────────────────────────────────
     @Override
     public SpecialtyResponse addSpecialty(UUID practitionerId, SpecialtyRequest req) {
+        ensureAtLeastOnePrimarySpecialty(practitionerId, null, req.isPrimary());
         Practitioner p = findPractitioner(practitionerId);
         PractitionerSpecialty entity = new PractitionerSpecialty();
         entity.setPractitioner(p);
@@ -74,6 +95,8 @@ public class PractitionerSubEntityServiceImpl implements PractitionerSubEntitySe
             specialtyRepository.findById(specialtyId)
                 .orElseThrow(() -> new ResourceNotFoundException("Specialty not found"));
 
+        ensureAtLeastOnePrimarySpecialty(practitionerId, specialtyId, request.isPrimary());
+
         SpecialtyResponse before = toSpecialtyResponse(specialty);
 
         specialty.setTaxonomyCode(request.getTaxonomyCode());
@@ -108,6 +131,8 @@ public class PractitionerSubEntityServiceImpl implements PractitionerSubEntitySe
         PractitionerSpecialty specialty =
             specialtyRepository.findById(specialtyId)
                 .orElseThrow(() -> new ResourceNotFoundException("Specialty not found"));
+
+        ensureAtLeastOnePrimarySpecialty(practitionerId, specialtyId, false);
 
         SpecialtyResponse before = toSpecialtyResponse(specialty);
 
