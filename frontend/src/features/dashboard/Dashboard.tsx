@@ -1,6 +1,6 @@
 import { useNavigate } from "react-router-dom";
-import { dashboardCards } from "@/dashboard";
-import NavTileCard from "@/components/NavTileCard";
+import { dashboardCards } from "@/features/dashboard/dashboardCards";
+import NavTileCard from "@/shared/ui/NavTileCard";
 
 const Dashboard = () => {
   const navigate = useNavigate();
